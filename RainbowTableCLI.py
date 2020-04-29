@@ -48,26 +48,29 @@ valid_hash = ('md5', 'sha1', 'sha256', 'sha512', 'sha224', 'sha384', 'blake2b', 
 if "-h" in args or "--help" in args: #help message
     name=args[0] #dynamic help message
     print("rainbowtable-cli - simple python3 rainbow table tool")
-    print("============================================================")
+    print("==========================================================================================")
     print(name+" [ COMMAND ] [ OPTIONS ]")
     print()
     print("COMMANDS")
-    print("gen, generate          generate rainbow table")
-    print(name+" gen [ HASH_ALGORITHM ] [ FILE ] [ -c luds ]")
-    print("hash                   hash given string")
+    print("gen, generate          Generate rainbow table")
+    print(name+" gen [ HASH_ALGORITHM ] [ FILE ] [ -c luds ] [ -n ] [ -h N ] [ -l N ] [ -q ]")
+    print("hash                   Hash given string")
     print(name+" hash [ HASH_ALGORITHM ] [ STRING ]")
-    print("ss, stringsearch       search table for hash of string")
+    print("ss, stringsearch       Search table for hash of string")
     print(name+" ss [ TABLE_FILE ] [ STRING ]")
-    print("hs, hashsearch         search table for plaintext of hash")
+    print("hs, hashsearch         Search table for plaintext of hash")
     print(name+" hs [ TABLE_FILE ] [ HASH ]")
     print()
     print("OPTIONS:")
     print("-h, --help             Show this help message")
     print("-c, --chars            Set the character set")
-    print("                       l - lowercase")
-    print("                       u - uppercase")
-    print("                       d - digits")
-    print("                       s - symbols")
+    print("                           l - lowercase")
+    print("                           u - uppercase")
+    print("                           d - digits")
+    print("                           s - symbols")
+    print("-n, --nofile           Don't save table to file")
+    print("-l, --limit            Stop generation after given amount of hashes")
+    print("-q, --quiet            No generation terminal output")
     print()
     print("VALID HASH ALGORITHMS:")
     print("md5, sha1, sha256, sha512, sha224, sha384, blake2b,")
@@ -76,15 +79,23 @@ if "-h" in args or "--help" in args: #help message
     exit(0)
 
 mode = 0
+limit = float("inf")
 modeIndex = 0
 i=1
+noFile = False
+quiet = False
 chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()_-+=[{]}|:;'\",<.>/?\\"
+
+if "-n" in args or "--nofile" in args:
+    noFile = True
 
 while i< len(args):
     if (args[i].lower() == 'gen' or args[i].lower == 'generate') and mode==0:
         mode = 1
         modeIndex = i
-        i+=2
+        if noFile == False:
+            i+=2
+        else: i+=1
     if args[i].lower() == 'hash' and mode==0:
         mode = 2
         modeIndex = i
@@ -108,95 +119,122 @@ while i< len(args):
             chars+="1234567890"
         if args[i].lower().count('s') > 0:
             chars+="`~!@#$%^&*()_-+=[{]}|:;'\",<.>/?\\"
+    if args[i].lower() == '-l' or args[i].lower() == '--limit':
+        i += 1
+        try:
+            limit = float(args[i])
+        except ValueError:
+            print("Invalid Arguments")
+            exit(1)
+    if args[i].lower() == '-q' or args[i].lower() == '--quiet':
+        quiet = True
 
     i+=1
 
-
-if mode == 1: #rainbow table generate mode
-    hash_type = args[modeIndex+1].lower()
-    if not hash_type in valid_hash:
-        print("Invalid hash algorithm")
-        exit(1)
-    path = args[modeIndex+2]
-    try:
-        open(path)
-        print("File already exists, will be overwritten")
-        prompt = input("Do you want to continue? [Y/n]: ")
-        prompt = prompt.lower()
-        if prompt == "y" or prompt == "yes":
-            print("File is being overwritten")
-        else:
-            print("Operation canceled")
+try:
+    if mode == 1: #rainbow table generate mode
+        hash_type = args[modeIndex+1].lower()
+        if not hash_type in valid_hash:
+            print("Invalid hash algorithm")
             exit(1)
-    except IOError:
-        pass
-    table = open(path,"w+")
-    attempts = 0
-    table.write("rainbowtablekit " + hash_type + "\n")
-    for i in range(1, 9):
-        for letter in itertools.product(chars, repeat=i):
-            attempts += 1
-            letter = ''.join(letter)
-            table.write(str(letter) + ' ' + str(hash(letter, hash_type)) + '\n')
-            print(str(letter) + ' ' + str(hash(letter, hash_type)))
-
-elif mode == 2: #string hash mode
-    hash_type = args[modeIndex+1].lower()
-    if not hash_type in valid_hash:
-        print("Invalid hash algorithm")
-        exit(1)
-    print(str(hash(args[modeIndex+2], hash_type)))
-
-elif mode == 3: #string table search
-    path = args[modeIndex+1]
-    search = args[modeIndex+2]
-    try:
-        with open(path, 'r') as table:
-            line_num = 0
-            found = False
-            for line in table:
-                line_num += 1
-                current = line.split(' ')
-                if line_num == 1:
-                    if current[0] != "rainbowtablekit":
-                        print("Invalid table file")
-                        exit(1)
-                    hash_type = current[1][:-1]
+        if noFile == False:
+            path = args[modeIndex+2]
+            try:
+                open(path)
+                print("File already exists, will be overwritten")
+                prompt = input("Do you want to continue? [Y/n]: ")
+                prompt = prompt.lower()
+                if prompt == "y" or prompt == "yes":
+                    print("File is being overwritten")
                 else:
-                    if current[0] == search:
-                        print(hash_type + " hash of \"" + search + "\" found on file line " + str(line_num))
-                        print(hash_type + " hash: " + current[1][:-1])
-    except FileNotFoundError:
-        print("File does not exist")
+                    print("Operation canceled")
+                    exit(1)
+            except IOError:
+                pass
+            table = open(path,"w+")
+            attempts = 0
+            table.write("rainbowtablekit " + hash_type + "\n")
+            for i in range(1, 9):
+                for letter in itertools.product(chars, repeat=i):
+                    attempts += 1
+                    letter = ''.join(letter)
+                    table.write(str(letter) + ' ' + str(hash(letter, hash_type)) + '\n')
+                    if quiet == False:
+                        print(str(letter) + ' ' + str(hash(letter, hash_type)))
+                    if attempts >= limit:
+                        print("Generation Limit Reached")
+                        exit(0)
+        else:
+            attempts = 0
+            for i in range(1, 9):
+                for letter in itertools.product(chars, repeat=i):
+                    attempts += 1
+                    letter = ''.join(letter)
+                    if quiet == False:
+                        print(str(letter) + ' ' + str(hash(letter, hash_type)))
+                    if attempts >= limit:
+                        print("Generation Limit Reached")
+                        exit(0)
+
+    elif mode == 2: #string hash mode
+        hash_type = args[modeIndex+1].lower()
+        if not hash_type in valid_hash:
+            print("Invalid hash algorithm")
+            exit(1)
+        print(str(hash(args[modeIndex+2], hash_type)))
+
+    elif mode == 3: #string table search
+        path = args[modeIndex+1]
+        search = args[modeIndex+2]
+        try:
+            with open(path, 'r') as table:
+                line_num = 0
+                found = False
+                for line in table:
+                    line_num += 1
+                    current = line.split(' ')
+                    if line_num == 1:
+                        if current[0] != "rainbowtablekit":
+                            print("Invalid table file")
+                            exit(1)
+                        hash_type = current[1][:-1]
+                    else:
+                        if current[0] == search:
+                            print(hash_type + " hash of \"" + search + "\" found on file line " + str(line_num))
+                            print(hash_type + " hash: " + current[1][:-1])
+        except FileNotFoundError:
+            print("File does not exist")
+            exit(1)
+
+    elif mode == 4: #hash table search
+        path = args[modeIndex+1]
+        search = args[modeIndex+2]
+        try:
+            with open(path, 'r') as table:
+                line_num = 0
+                found = False
+                for line in table:
+                    line_num += 1
+                    current = line.split(' ')
+                    if line_num == 1:
+                        if current[0] != "rainbowtablekit":
+                            print("Invalid table file")
+                            exit(1)
+                        hash_type = current[1][:-1]
+                    else:
+                        if current[1][:-1] == search:
+                            print("Plaintext of \"" + search + "\" found on file line " + str(line_num))
+                            print("plaintext: " + current[0])
+        except FileNotFoundError:
+            print("File does not exist")
+            exit(1)
+
+    else:
+        print("Invalid arguments given")
+        name=args[0]
+        print("Try running '"+name+" -h' for help")
         exit(1)
 
-elif mode == 4: #hash table search
-    path = args[modeIndex+1]
-    search = args[modeIndex+2]
-    try:
-        with open(path, 'r') as table:
-            line_num = 0
-            found = False
-            for line in table:
-                line_num += 1
-                current = line.split(' ')
-                if line_num == 1:
-                    if current[0] != "rainbowtablekit":
-                        print("Invalid table file")
-                        exit(1)
-                    hash_type = current[1][:-1]
-                else:
-                    if current[1][:-1] == search:
-                        print("Plaintext of \"" + search + "\" found on file line " + str(line_num))
-                        print("plaintext: " + current[0])
-    except FileNotFoundError:
-        print("File does not exist")
-        exit(1)
-
-else:
-    print("Invalid arguments given")
-    name=args[0]
-    print("Try running '"+name+" -h' for help")
-    exit(1)
-
-
+except KeyboardInterrupt:
+    print("Operation Interrupted")
+    exit(0)
