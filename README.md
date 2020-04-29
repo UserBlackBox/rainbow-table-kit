@@ -11,17 +11,17 @@ Simple Python program to create and search rainbow tables. Hashes are done using
 ```
 rainbowtable-cli - simple python3 rainbow table tool
 ==========================================================================================
-./RainbowTableCLI.py [ COMMAND ] [ OPTIONS ]
+RainbowTableCLI.py [ COMMAND ] [ OPTIONS ]
 
 COMMANDS
 gen, generate          Generate rainbow table
-./RainbowTableCLI.py gen [ HASH_ALGORITHM ] [ FILE ] [ -c luds ] [ -n ] [ -h N ] [ -l N ] [ -q ]
+RainbowTableCLI.py gen [ HASH_ALGORITHM ] [ FILE ] [ -c luds ] [ -n ] [ -h N ] [ -l N ] [ -q ]
 hash                   Hash given string
-./RainbowTableCLI.py hash [ HASH_ALGORITHM ] [ STRING ]
+RainbowTableCLI.py hash [ HASH_ALGORITHM ] [ STRING ]
 ss, stringsearch       Search table for hash of string
-./RainbowTableCLI.py ss [ TABLE_FILE ] [ STRING ]
+RainbowTableCLI.py ss [ TABLE_FILE ] [ STRING ]
 hs, hashsearch         Search table for plaintext of hash
-./RainbowTableCLI.py hs [ TABLE_FILE ] [ HASH ]
+RainbowTableCLI.py hs [ TABLE_FILE ] [ HASH ]
 
 OPTIONS:
 -h, --help             Show this help message
