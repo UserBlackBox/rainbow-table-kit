@@ -86,10 +86,10 @@ noFile = False
 quiet = False
 chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()_-+=[{]}|:;'\",<.>/?\\"
 
-if "-n" in args or "--nofile" in args:
+if "-n" in args or "--nofile" in args: #nofile option
     noFile = True
 
-while i< len(args):
+while i< len(args): #argument parsing
     if (args[i].lower() == 'gen' or args[i].lower == 'generate') and mode==0:
         mode = 1
         modeIndex = i
@@ -229,7 +229,7 @@ try:
             print("File does not exist")
             exit(1)
 
-    else:
+    else: #invalid
         print("Invalid arguments given")
         name=args[0]
         print("Try running '"+name+" -h' for help")
