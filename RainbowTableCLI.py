@@ -43,7 +43,7 @@ def hash(string, hash):
         hash = hashlib.sha3_512(string.encode('utf-8'))
         return hash.hexdigest()
 
-valid_hash = ('md5', 'sha1', 'sha256', 'sha512', 'sha224', 'sha384', 'blake2b', 'sha3_224', 'sha3_256', 'sha3_384', 'sha3_512')
+valid_hash = ('md5', 'sha1', 'sha256', 'sha512', 'sha224', 'sha384', 'blake2b', 'blake2s', 'sha3_224', 'sha3_256', 'sha3_384', 'sha3_512')
 
 if "-h" in args or "--help" in args: #help message
     name=args[0] #dynamic help message
@@ -74,7 +74,7 @@ if "-h" in args or "--help" in args: #help message
     print()
     print("VALID HASH ALGORITHMS:")
     print("md5, sha1, sha256, sha512, sha224, sha384, blake2b,")
-    print("sha3_224, sha3_256, sha3_384, sha3_512")
+    print("blake2s, sha3_224, sha3_256, sha3_384, sha3_512")
 
     exit(0)
 
